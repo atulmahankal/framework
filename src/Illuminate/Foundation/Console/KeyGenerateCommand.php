@@ -19,6 +19,7 @@ class KeyGenerateCommand extends Command
      */
     protected $signature = 'key:generate
                     {--show : Display the key instead of modifying files}
+                    {--new : Overwrite application key}
                     {--force : Force the operation to run when in production}';
 
     /**
@@ -35,10 +36,21 @@ class KeyGenerateCommand extends Command
      */
     public function handle()
     {
+        $appKey=$this->laravel['config']['app.key'];
         $key = $this->generateRandomKey();
 
         if ($this->option('show')) {
-            return $this->line('<comment>'.$key.'</comment>');
+            if (! $this->option('new')) {
+                return $this->line('<comment>'.$appKey.'</comment>');
+                // $this->components->info($appKey);
+                // return;
+            } else {
+                return $this->line('<comment>'.$key.'</comment>');
+            }
+        }
+
+        if ($appKey && ! $this->option('new')) {
+            return $this->components->error('Application key already exist.');
         }
 
         // Next, we will replace the application key in the environment file so it is
