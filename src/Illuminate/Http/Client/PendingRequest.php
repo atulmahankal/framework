@@ -600,13 +600,13 @@ class PendingRequest
     /**
      * Specify the number of times the request should be attempted.
      *
-     * @param  int  $times
+     * @param  array|int  $times
      * @param  Closure|int  $sleepMilliseconds
      * @param  callable|null  $when
      * @param  bool  $throw
      * @return $this
      */
-    public function retry(int $times, Closure|int $sleepMilliseconds = 0, ?callable $when = null, bool $throw = true)
+    public function retry(array|int $times, Closure|int $sleepMilliseconds = 0, ?callable $when = null, bool $throw = true)
     {
         $this->tries = $times;
         $this->retryDelay = $sleepMilliseconds;
@@ -911,11 +911,15 @@ class PendingRequest
                             $response->throw($this->throwCallback);
                         }
 
-                        if ($attempt < $this->tries && $shouldRetry) {
+                        $potentialTries = is_array($this->tries)
+                            ? count($this->tries) + 1
+                            : $this->tries;
+
+                        if ($attempt < $potentialTries && $shouldRetry) {
                             $response->throw();
                         }
 
-                        if ($this->tries > 1 && $this->retryThrow) {
+                        if ($potentialTries > 1 && $this->retryThrow) {
                             $response->throw();
                         }
                     }
